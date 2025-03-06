@@ -1,7 +1,8 @@
 import argparse
 import asyncio
-from .client import SMSClient
-from .config import Config
+from sms_client.logging_config import logger
+from sms_client.client import SMSClient
+from sms_client.config import Config
 
 
 async def async_main():
@@ -12,6 +13,8 @@ async def async_main():
     parser.add_argument("--message", required=True, help="Текст сообщения", nargs="?")
     args = parser.parse_args()
 
+    logger.info("Запуск с параметрами: %s", vars(args))
+
     try:
         config = Config.from_file()
         client = SMSClient(config)
@@ -19,8 +22,11 @@ async def async_main():
 
         print(f"Код ответа: {response.status_code}")
         print(f"Тело ответа: {response.body.decode()}")
+        logger.info("Успешный ответ: %d", response.status_code)
+
     except Exception as e:
-        raise RuntimeError(f"Error: {e}")
+        logger.critical("Критическая ошибка: %s", str(e))
+        raise
 
 
 def main():

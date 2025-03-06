@@ -1,8 +1,9 @@
 import json
 import asyncio
 import base64
-from .config import Config
-from .http import HTTPRequest, HTTPResponse
+from sms_client.logging_config import logger
+from sms_client.config import Config
+from sms_client.http import HTTPRequest, HTTPResponse
 
 
 class SMSClient:
@@ -10,6 +11,7 @@ class SMSClient:
 
     def __init__(self, config: Config):
         self.config = config
+        logger.debug("Инициализация клиента для %s", self.config.service_url)
 
     async def send_sms(self, sender: str, recipient: str, message: str) -> HTTPResponse:
         """Асинхронно отправляет SMS через API.
@@ -45,14 +47,23 @@ class SMSClient:
             body=body
         )
 
+        logger.debug("Установка соединения с %s:%s", host, port)
         reader, writer = await asyncio.open_connection(host, int(port))
 
         try:
             writer.write(request.to_bytes())
             await writer.drain()
             response_data = await reader.read(4096)
+            logger.debug("Получено %d байт ответа", len(response_data))
+
+        except (ConnectionError, TimeoutError) as e:
+            logger.error("Ошибка соединения: %s", str(e))
+            raise
+
         except Exception as e:
-            raise RuntimeError(f"Error: {e}")
+            logger.critical("Неизвестная ошибка: %s", str(e))
+            raise
+
         finally:
             writer.close()
             await writer.wait_closed()

@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from sms_client.logging_config import logger
 
 try:
-    import tomllib  # Python 3.11+
+    import tomllib
+
 except ImportError:
-    import tomli as tomllib  # Python <3.11
+    import tomli as tomllib
 
 
 @dataclass
@@ -23,6 +25,7 @@ class Config:
         Returns:
             Config: Загруженная конфигурация.
         """
+        logger.info("Загрузка конфигурации из %s", path)
         with open(path, 'rb') as f:
             data = tomllib.load(f)
         return cls(**data["sms_service"])

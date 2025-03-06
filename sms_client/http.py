@@ -42,6 +42,7 @@ class HTTPResponse:
         """
         try:
             header_end = binary_data.index(b"\r\n\r\n")
+
         except ValueError:
             header_end = len(binary_data)
 
