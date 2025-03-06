@@ -4,12 +4,18 @@ from typing import Optional, Dict
 
 @dataclass
 class HTTPRequest:
+    """Класс для представления HTTP-запроса."""
     method: str
     path: str
     headers: Dict[str, str]
     body: Optional[bytes] = None
 
     def to_bytes(self) -> bytes:
+        """Преобразует объект запроса в байтовую последовательность.
+
+        Returns:
+            bytes: Байтовое представление HTTP-запроса
+        """
         headers = "\r\n".join(f"{k}: {v}" for k, v in self.headers.items())
         request = f"{self.method} {self.path} HTTP/1.1\r\n{headers}\r\n\r\n"
         if self.body:
@@ -19,12 +25,21 @@ class HTTPRequest:
 
 @dataclass
 class HTTPResponse:
+    """Класс для представления HTTP-ответа."""
     status_code: int
     headers: Dict[str, str]
     body: bytes
 
     @classmethod
     def from_bytes(cls, binary_data: bytes) -> "HTTPResponse":
+        """Создает объект ответа из байтовой последовательности.
+
+        Args:
+            binary_data (bytes): Полученные байты ответа
+
+        Returns:
+            HTTPResponse: Сформированный объект ответа
+        """
         try:
             header_end = binary_data.index(b"\r\n\r\n")
         except ValueError:
